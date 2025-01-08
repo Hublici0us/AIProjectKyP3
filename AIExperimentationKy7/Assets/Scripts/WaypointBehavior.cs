@@ -19,18 +19,26 @@ public class WaypointBehavior : MonoBehaviour
     {
         tracker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         DestroyImmediate(tracker.GetComponent<Collider>());
+        tracker.GetComponent<MeshRenderer>().enabled = false;
         tracker.transform.position = this.transform.position;
         tracker.transform.rotation = this.transform.rotation;
     }
 
     void ProgressTracker()
     {
+        if (Vector3.Distance(tracker.transform.position, this.transform.position) > lookAhead)
+        {
+            Quaternion lookatTracker = Quaternion.LookRotation(tracker.transform.position - transform.position);
+            this.transform.rotation = Quaternion.Slerp(this.transform.rotation, lookatTracker, rotationSpeed * Time.deltaTime * 2);
+            this.transform.Translate(0, 0, speed * Time.deltaTime);
+            return;
+        }
 
         if (Vector3.Distance(tracker.transform.position, waypoints[currentWaypoint].transform.position) < 3) { currentWaypoint++; }
         if (currentWaypoint >= waypoints.Length) { currentWaypoint = 0; }
 
         tracker.transform.LookAt(waypoints[currentWaypoint].transform);
-        tracker.transform.Translate(0, 0, (speed + 5) * Time.deltaTime);
+        tracker.transform.Translate(0, 0, (speed + 10) * Time.deltaTime);
     }
 
     // Update is called once per frame
@@ -41,7 +49,7 @@ public class WaypointBehavior : MonoBehaviour
 
         Quaternion lookatWP = Quaternion.LookRotation(waypoints[currentWaypoint].transform.position - transform.position);
 
-        this.transform.rotation = Quaternion.Slerp(transform.rotation, lookatWP, rotationSpeed * Time.deltaTime);
+        this.transform.rotation = Quaternion.Slerp(this.transform.rotation, lookatWP, rotationSpeed * Time.deltaTime);
 
         this.transform.Translate(0, 0, speed * Time.deltaTime);
         
