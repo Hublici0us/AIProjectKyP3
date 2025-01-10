@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using UnityEditor.Animations;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class Graph
@@ -43,6 +44,86 @@ public class Graph
         return null;
     }
 
+    public bool AStar(GameObject startId, GameObject endId)
+    {
+        Node start = FindNode(startId);
+        Node end = FindNode(endId);
+
+        if (start == null || end == null) { return false; }
+
+        List<Node> open = new List<Node>();
+        List <Node> close = new List<Node>();
+        float tentative_g_score = 0;
+        bool tentative_is_better;
+
+        start.g = 0;
+        start.h = distance(start,end);
+        start.f = start.h;
+
+        open.Add(start);
+        while (open.Count > 0)
+        {
+            int i = lowestF(open);
+            Node thisNode = open[i];
+            if(thisNode.getId() == endId)
+            {
+                ReconstructPath(start, end);
+                return true;
+            }
+
+            open.RemoveAt(i);
+            close.Add(thisNode);
+            Node neighbor;
+            foreach (Edge e in thisNode.edgeList)
+            {
+                neighbor = e.endNode;
+
+                if (close.IndexOf(neighbor) > -1)
+                {
+                    continue;
+                }
+
+                tentative_g_score = thisNode.g + distance(thisNode, neighbor);
+
+                if (open.IndexOf(neighbor) == -1)
+                {
+                    open.Add(neighbor);
+                    tentative_is_better = true;
+                }
+                else if (tentative_g_score < neighbor.g)
+                {
+                    tentative_is_better = true;
+                }
+                else { tentative_is_better = false; }
+
+                if (tentative_is_better)
+                {
+                    neighbor.cameFrom = thisNode;
+                    neighbor.g = tentative_g_score;
+                    neighbor.h = distance(thisNode, end);
+                    neighbor.f = neighbor.g + neighbor.h;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public void ReconstructPath(Node startId, Node endId)
+    {
+        pathList.Clear();
+        pathList.Add(endId);
+
+        var p = endId.cameFrom;
+        while (p != startId && p != null)
+        {
+            pathList.Insert(0, p);
+            p = p.cameFrom;
+        }
+        pathList.Insert(0, startId);
+
+    }
+
     float distance (Node a, Node b)
     {
         return(Vector3.SqrMagnitude(a.getId().transform.position - b.getId().transform.position));
@@ -50,17 +131,17 @@ public class Graph
 
     int lowestF(List<Node> l)
     {
-        float lowestF = 0;
+        float lowestf = 0;
         int count = 0;
         int iteratorCount = 0;
 
-        lowestF = l[0].f;
+        lowestf = l[0].f;
 
         for(int i = 1; i < l.Count; i++)
         {
-            if (l[i].f <= lowestF)
+            if (l[i].f <= lowestf)
             {
-                lowestF = l[i].f;
+                lowestf = l[i].f;
                 iteratorCount = count;
             }
             count++;
