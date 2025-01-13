@@ -18,7 +18,7 @@ public class WPManager : MonoBehaviour
     public Graph graph = new Graph();
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         if (waypoints.Length > 0)
         {

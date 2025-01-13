@@ -9,7 +9,7 @@ public class Graph
 {
     List<Edge> edges = new List<Edge>();
     List<Node> nodes = new List<Node>();
-    List<Node> pathList = new List<Node>();
+    public List<Node> pathList = new List<Node>();
 
     public Graph()
     {
@@ -50,6 +50,11 @@ public class Graph
         Node end = FindNode(endId);
 
         if (start == null || end == null) { return false; }
+        if (startId == endId)
+        {
+            pathList.Clear();
+            return false;
+        }
 
         List<Node> open = new List<Node>();
         List <Node> close = new List<Node>();
